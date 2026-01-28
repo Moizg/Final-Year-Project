@@ -1,0 +1,19 @@
+<configuration>
+    <input>
+        <net-file value="intersection.net.xml"/>
+        <route-files value="traffic.rou.xml"/>
+        <additional-files value="detectors.add.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="36000"/>
+    </time>
+	<output>
+        <tripinfo-output value="output_tripinfo.xml"/>
+
+        <queue-output value="output_queues.xml"/>
+        <queue-output.period value="60"/>
+
+        <edgedata-output value="output_edgedata.xml"/>
+    </output>
+</configuration>

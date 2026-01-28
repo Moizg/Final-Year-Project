@@ -1,0 +1,17 @@
+# Ignore python cache
+__pycache__/
+*.py[cod]
+
+# Ignore SUMO output files (Too big for GitHub)
+output_*.xml
+tripinfo*.xml
+queues*.xml
+edgedata*.xml
+*.csv
+
+# Ignore GUI settings files (optional)
+*.gui.cfg
+
+# Keep your source XMLs! (Don't ignore these)
+# !intersection.net.xml
+# !traffic.rou.xml

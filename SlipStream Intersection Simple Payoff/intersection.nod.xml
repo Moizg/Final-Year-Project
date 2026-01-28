@@ -1,0 +1,13 @@
+<nodes>
+   <node id="Center" x="0.0" y="0.0" type="traffic_light"/>
+
+   <node id="N" x="0.0" y="500.0" />
+   <node id="S" x="0.0" y="-500.0" />
+   <node id="E" x="500.0" y="0.0" />
+   <node id="W" x="-500.0" y="0.0" />
+
+   <node id="N_split" x="0.0" y="100.0" />
+   <node id="S_split" x="0.0" y="-100.0" />
+   <node id="E_split" x="100.0" y="0.0" />
+   <node id="W_split" x="-100.0" y="0.0" />
+</nodes>

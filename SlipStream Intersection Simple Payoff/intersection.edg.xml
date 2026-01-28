@@ -1,0 +1,21 @@
+<edges>
+    <edge id="N_in" from="N_split" to="Center" numLanes="3" speed="13.89" />
+    <edge id="S_in" from="S_split" to="Center" numLanes="3" speed="13.89" />
+    <edge id="E_in" from="E_split" to="Center" numLanes="3" speed="13.89" />
+    <edge id="W_in" from="W_split" to="Center" numLanes="3" speed="13.89" />
+
+    <edge id="slip_NE" from="N_split" to="E" numLanes="1" speed="10.0" shape="0,80 30,30 80,0"/>
+    <edge id="slip_SW" from="S_split" to="W" numLanes="1" speed="10.0" shape="0,-80 -30,-30 -80,0"/>
+    <edge id="slip_ES" from="E_split" to="S" numLanes="1" speed="10.0" shape="80,0 30,-30 0,-80"/>
+    <edge id="slip_WN" from="W_split" to="N" numLanes="1" speed="10.0" shape="-80,0 -30,30 0,80"/>
+
+    <edge id="N2C" from="N" to="N_split" numLanes="4" speed="13.89" />
+    <edge id="S2C" from="S" to="S_split" numLanes="4" speed="13.89" />
+    <edge id="E2C" from="E" to="E_split" numLanes="4" speed="13.89" />
+    <edge id="W2C" from="W" to="W_split" numLanes="4" speed="13.89" />
+    
+    <edge id="C2N" from="Center" to="N" numLanes="3" speed="13.89" />
+    <edge id="C2S" from="Center" to="S" numLanes="3" speed="13.89" />
+    <edge id="C2E" from="Center" to="E" numLanes="3" speed="13.89" />
+    <edge id="C2W" from="Center" to="W" numLanes="3" speed="13.89" />
+</edges>

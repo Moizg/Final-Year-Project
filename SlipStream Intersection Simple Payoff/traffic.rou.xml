@@ -1,0 +1,114 @@
+<routes>
+    <vTypeDistribution id="mix_pakistan">
+        <vType id="motorcycle" probability="0.45" vClass="motorcycle" length="2.2" minGap="1.0" accel="3.0" decel="5.0" sigma="0.8" lcStrategic="50" lcCooperative="0.0" lcPushy="1.0" carFollowModel="Krauss"/>
+        
+        <vType id="car" probability="0.30" vClass="passenger" length="4.5" minGap="2.5" accel="2.6" decel="4.5" sigma="0.5" lcStrategic="100" lcCooperative="0.5" lcSpeedGain="2.0" carFollowModel="Krauss"/>
+        
+        <vType id="rickshaw" probability="0.15" vClass="moped" length="3.0" minGap="1.5" accel="1.5" decel="3.5" sigma="0.6" carFollowModel="Krauss"/>
+        
+        <vType id="truck" probability="0.05" vClass="truck" length="8.0" minGap="3.0" accel="1.2" decel="4.0" sigma="0.3"/>
+        <vType id="bus" probability="0.05" vClass="bus" length="12.0" minGap="3.5" accel="1.0" decel="4.0" sigma="0.3"/>
+    </vTypeDistribution>
+
+
+    <route id="N_Slip" edges="N2C slip_NE"/>
+    <route id="N_Straight" edges="N2C N_in C2S"/>
+    <route id="N_Right" edges="N2C N_in C2W"/>
+    <route id="S_Slip" edges="S2C slip_SW"/>
+    <route id="S_Straight" edges="S2C S_in C2N"/>
+    <route id="S_Right" edges="S2C S_in C2E"/>
+    <route id="E_Slip" edges="E2C slip_ES"/>
+    <route id="E_Straight" edges="E2C E_in C2W"/>
+    <route id="E_Right" edges="E2C E_in C2N"/>
+    <route id="W_Slip" edges="W2C slip_WN"/>
+    <route id="W_Straight" edges="W2C W_in C2E"/>
+    <route id="W_Right" edges="W2C W_in C2S"/>
+
+
+    <flow id="f_N_peak_m" begin="0" end="10800" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="N_Straight" probability="0.60"/>
+            <route refId="N_Right" probability="0.25"/>
+            <route refId="N_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_S_peak_m" begin="0" end="10800" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="S_Straight" probability="0.60"/>
+            <route refId="S_Right" probability="0.25"/>
+            <route refId="S_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_E_peak_m" begin="0" end="10800" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="E_Straight" probability="0.60"/>
+            <route refId="E_Right" probability="0.25"/>
+            <route refId="E_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_W_peak_m" begin="0" end="10800" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="W_Straight" probability="0.60"/>
+            <route refId="W_Right" probability="0.25"/>
+            <route refId="W_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+
+    <flow id="f_N_off" begin="10800" end="21600" vehsPerHour="600" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="N_Straight" probability="0.60"/>
+            <route refId="N_Right" probability="0.25"/>
+            <route refId="N_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_S_off" begin="10800" end="21600" vehsPerHour="600" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="S_Straight" probability="0.60"/>
+            <route refId="S_Right" probability="0.25"/>
+            <route refId="S_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_E_off" begin="10800" end="21600" vehsPerHour="600" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="E_Straight" probability="0.60"/>
+            <route refId="E_Right" probability="0.25"/>
+            <route refId="E_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_W_off" begin="10800" end="21600" vehsPerHour="600" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="W_Straight" probability="0.60"/>
+            <route refId="W_Right" probability="0.25"/>
+            <route refId="W_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+
+    <flow id="f_N_peak_e" begin="21600" end="36000" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="N_Straight" probability="0.60"/>
+            <route refId="N_Right" probability="0.25"/>
+            <route refId="N_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_S_peak_e" begin="21600" end="36000" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="S_Straight" probability="0.60"/>
+            <route refId="S_Right" probability="0.25"/>
+            <route refId="S_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_E_peak_e" begin="21600" end="36000" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="E_Straight" probability="0.60"/>
+            <route refId="E_Right" probability="0.25"/>
+            <route refId="E_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+    <flow id="f_W_peak_e" begin="21600" end="36000" vehsPerHour="1200" type="mix_pakistan">
+        <routeDistribution>
+            <route refId="W_Straight" probability="0.60"/>
+            <route refId="W_Right" probability="0.25"/>
+            <route refId="W_Slip" probability="0.15"/>
+        </routeDistribution>
+    </flow>
+</routes>

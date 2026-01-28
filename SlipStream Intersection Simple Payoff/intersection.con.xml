@@ -1,0 +1,21 @@
+<connections>
+    <connection from="N2C" to="slip_NE" fromLane="3" toLane="0" />
+    <connection from="N2C" to="N_in" fromLane="0" toLane="0" />
+    <connection from="N2C" to="N_in" fromLane="1" toLane="1" />
+    <connection from="N2C" to="N_in" fromLane="2" toLane="2" />
+
+    <connection from="S2C" to="slip_SW" fromLane="3" toLane="0" />
+    <connection from="S2C" to="S_in" fromLane="0" toLane="0" />
+    <connection from="S2C" to="S_in" fromLane="1" toLane="1" />
+    <connection from="S2C" to="S_in" fromLane="2" toLane="2" />
+
+    <connection from="E2C" to="slip_ES" fromLane="3" toLane="0" />
+    <connection from="E2C" to="E_in" fromLane="0" toLane="0" />
+    <connection from="E2C" to="E_in" fromLane="1" toLane="1" />
+    <connection from="E2C" to="E_in" fromLane="2" toLane="2" />
+
+    <connection from="W2C" to="slip_WN" fromLane="3" toLane="0" />
+    <connection from="W2C" to="W_in" fromLane="0" toLane="0" />
+    <connection from="W2C" to="W_in" fromLane="1" toLane="1" />
+    <connection from="W2C" to="W_in" fromLane="2" toLane="2" />
+</connections>
