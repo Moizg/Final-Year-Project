@@ -6,7 +6,9 @@ An intelligent traffic signal controller that replaces fixed-time cycles with a 
 
 This project addresses the inefficiencies of static traffic signals in urban areas with high unpredictability (e.g., Pakistan). By modeling the intersection as a non-cooperative game, the system treats road lanes as "players" competing for Green time. The controller calculates a Nash Equilibrium-like state in real-time based on queue lengths, minimizing total system wait time.
 
-This version **1.0** release (The "Slipstream" Version) features a custom-designed 4-way intersection with dedicated **Slip Lanes** (Left-Turn bypasses) to separate turning traffic from the main signal flow, further enhancing throughput. The simulation includes realistic mixed traffic: rickshaws, motorcycles, cars, and heavy vehicles with aggressive driving behaviors (lane weaving, gap acceptance).
+Version **1.0** release (The "Slipstream" Version) features a custom-designed 4-way intersection with dedicated **Slip Lanes** (Left-Turn bypasses) to separate turning traffic from the main signal flow, further enhancing throughput. The simulation includes realistic mixed traffic: rickshaws, motorcycles, cars, and heavy vehicles with aggressive driving behaviors (lane weaving, gap acceptance).
+
+Version **2.0** release features a 4-way intersection with no **Slip Lanes** (Left-Turn bypasses) to separate turning traffic from the main signal flow, further putting more pressure on the main intersection. The simulation again includes realistic mixed traffic: rickshaws, motorcycles, cars, and heavy vehicles with aggressive driving behaviors (lane weaving, gap acceptance). This version also uses a **Real Payoff** that takes into consideration queue lengths, waiting times, and residual.
 
 ## Getting Started
 
@@ -59,17 +61,21 @@ Common Issue: "Error: tcpip::Socket::recvAndCheck @ recv: peer shutdown" This us
 
 ## Authors
 
-[Abdul Moiz Ghazanfar] - @Moizg
+[Abdul Moiz Ghazanfar](https://github.com/Moizg)
 
-[Subhan Bokhari]
+[Subhan Bokhari](https://github.com/subhanbokhari)
 
-[Maaz Mustafa]
+[Maaz Mustafa](https://github.com/mustafamaaz)
 
 ## Version History
 
 * 1.0
     * Initial Release: "Slipstream" Version.
     * Features: Queue-length based simple Payoff Function, Slip Lane Geometry, Heterogeneous Traffic Model.
+
+* 2.0
+    * Second Release: Real Payoff Version.
+    * Features: Queue-length, Residual, and Waiting Times payoff function with Normal Geometry, Heterogeneous Traffic Model.
 
 ## License
 
@@ -78,6 +84,9 @@ This project is licensed under the [MIT] License - see the LICENSE.md file for d
 ## Acknowledgments
 
 Inspiration, code snippets, etc.
+* [Main Paper for Inspiration] - (https://www.mdpi.com/2076-3417/13/3/1781)
+* [Cited for use of Game Theory and SUMO] - (https://www.mdpi.com/1424-8220/23/23/9438)
 * Prof. Ben Polak (Yale University) - For the foundational Game Theory concepts.
 * Eclipse SUMO Community - For documentation and tooling support.
 * [README Template] - (https://gist.github.com/DomPizzie/7a5ff55ffa9081f2de27c315f5018afc)
+
