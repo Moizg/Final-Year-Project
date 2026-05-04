@@ -1,0 +1,20 @@
+<routes>
+    <vType id="car" vClass="passenger" length="5.0" accel="2.6" decel="4.5" sigma="0.5" tau="1.0" speedFactor="1.0" minGap="2.5"/>
+
+    <!-- 2. AGGRESSIVE BIKE: Short, accelerates incredibly fast, tailgates (tau=0.7), ignores speed limits -->
+    <vType id="bike" vClass="motorcycle" length="2.2" accel="4.0" decel="6.0" sigma="0.9" tau="0.7" speedFactor="1.2" minGap="1.0"/>
+
+    <!-- 3. HEAVY TRUCK: Long, sluggish acceleration, slow to react (tau=1.5), leaves big gaps -->
+    <vType id="truck" vClass="truck" length="12.0" accel="1.2" decel="2.5" sigma="0.3" tau="1.5" speedFactor="0.8" minGap="3.0"/>
+
+    <!-- THE CHAOTIC MIX: 60% Cars, 30% Bikes, 10% Trucks -->
+    <vTypeDistribution id="chaotic_mix" vTypes="car bike truck" probabilities="0.60 0.30 0.10"/>
+
+    <!-- North-South Axis (Balanced: 900 vph each way) -->
+    <flow id="flow_N2S" type="chaotic_mix" begin="0" end="3600" vehsPerHour="900" from="N2C" to="C2S" departLane="best"/>
+    <flow id="flow_S2N" type="chaotic_mix" begin="0" end="3600" vehsPerHour="900" from="S2C" to="C2N" departLane="best"/>
+
+    <!-- East-West Axis (Balanced: 900 vph each way) -->
+    <flow id="flow_E2W" type="chaotic_mix" begin="0" end="3600" vehsPerHour="900" from="E2C" to="C2W" departLane="best"/>
+    <flow id="flow_W2E" type="chaotic_mix" begin="0" end="3600" vehsPerHour="900" from="W2C" to="C2E" departLane="best"/>
+</routes>

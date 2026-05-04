@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Traffic Command Center — Live Nash Equilibrium</title>
+    <meta name="description" content="Adaptive Traffic Signal Scheduling using Game Theory. Real-time visualization of Nash Equilibrium-based intersection control powered by SUMO simulation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           DESIGN SYSTEM — AI Traffic Command Center
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f35;
+            --bg-card-hover: #222842;
+            --bg-glass: rgba(26, 31, 53, 0.85);
+            --border: rgba(99, 119, 186, 0.15);
+            --border-glow: rgba(99, 179, 237, 0.3);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            --gradient-card: linear-gradient(145deg, rgba(26,31,53,0.9) 0%, rgba(17,24,39,0.95) 100%);
+            --gradient-blue: linear-gradient(135deg, #3b82f6, #06b6d4);
+            --gradient-green: linear-gradient(135deg, #10b981, #34d399);
+            --gradient-red: linear-gradient(135deg, #ef4444, #f97316);
+            --gradient-amber: linear-gradient(135deg, #f59e0b, #fbbf24);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+            --shadow-glow-blue: 0 0 20px rgba(59,130,246,0.3);
+            --shadow-glow-green: 0 0 20px rgba(16,185,129,0.3);
+            --shadow-glow-red: 0 0 20px rgba(239,68,68,0.3);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app { position: relative; z-index: 1; }
+
+        /* ─── Header ───────────────────────────────────────────── */
+        .header {
+            background: var(--gradient-card);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-blue);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: var(--shadow-glow-blue);
+        }
+
+        .header-title h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #e2e8f0, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .header-title p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .connection-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            transition: background 0.3s;
+        }
+
+        .connection-dot.connected {
+            background: var(--accent-green);
+            box-shadow: 0 0 8px rgba(16,185,129,0.5);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ─── Main Layout ──────────────────────────────────────── */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            padding: 20px 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* ─── Metrics Bar ──────────────────────────────────────── */
+        .metrics-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .metric-card:nth-child(1)::before { background: var(--gradient-blue); }
+        .metric-card:nth-child(2)::before { background: var(--gradient-green); }
+        .metric-card:nth-child(3)::before { background: var(--gradient-amber); }
+        .metric-card:nth-child(4)::before { background: var(--gradient-red); }
+        .metric-card:nth-child(5)::before { background: var(--gradient-purple); }
+        .metric-card:nth-child(6)::before { background: var(--gradient-blue); }
+
+        .metric-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-icon {
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .metric-unit {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ─── Canvas Container ─────────────────────────────────── */
+        .canvas-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .canvas-container {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            min-height: 520px;
+        }
+
+        .canvas-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--gradient-blue);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .canvas-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .canvas-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .canvas-title .live-badge {
+            background: var(--accent-red);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            animation: pulse-badge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+            50% { opacity: 0.85; box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+        }
+
+        .canvas-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        #intersectionCanvas {
+            width: 100%;
+            border-radius: var(--radius-sm);
+            background: #0d1117;
+            cursor: crosshair;
+        }
+
+        /* ─── Right Panel ──────────────────────────────────────── */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .panel-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* ─── Nash Matrix ──────────────────────────────────────── */
+        .nash-card::before { background: var(--gradient-purple); }
+
+        .nash-matrix {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .nash-corner {
+            background: transparent;
+            padding: 6px;
+        }
+
+        .nash-header {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nash-row-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            writing-mode: horizontal-tb;
+        }
+
+        .nash-cell {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 8px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .nash-cell.equilibrium {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+        }
+
+        .nash-cell.conflict {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .nash-cell-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .nash-cell-label {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .nash-eq-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 0.5rem;
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .nash-pressure-bar {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pressure-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pressure-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            width: 28px;
+        }
+
+        .pressure-track {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .pressure-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .pressure-fill.ns { background: var(--gradient-green); }
+        .pressure-fill.ew { background: var(--gradient-amber); }
+
+        .pressure-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 50px;
+            text-align: right;
+        }
+
+        /* ─── Cost Breakdown ───────────────────────────────────── */
+        .cost-breakdown {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .cost-col-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 8px;
+            font-size: 0.68rem;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            margin-bottom: 3px;
+        }
+
+        .cost-item-label { color: var(--text-muted); }
+        .cost-item-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ─── Traffic Light Display ────────────────────────────── */
+        .signal-card::before { background: var(--gradient-amber); }
+
+        .signal-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .signal-axis {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .signal-axis.active-green {
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.08);
+        }
+
+        .signal-axis.active-red {
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .signal-axis.active-yellow {
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.08);
+        }
+
+        .signal-axis-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .signal-light {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin: 0 auto 6px;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .signal-light.green {
+            background: var(--accent-green);
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .signal-light.red {
+            background: var(--accent-red);
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.2);
+        }
+
+        .signal-light.yellow {
+            background: var(--accent-amber);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.6), 0 0 40px rgba(245, 158, 11, 0.2);
+            animation: blink-yellow 0.6s ease-in-out infinite;
+        }
+
+        @keyframes blink-yellow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .signal-state-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .signal-state-text.green { color: var(--accent-green); }
+        .signal-state-text.red { color: var(--accent-red); }
+        .signal-state-text.yellow { color: var(--accent-amber); }
+
+        .signal-queue {
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .signal-queue span {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .phase-timer {
+            text-align: center;
+            margin-top: 12px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .phase-timer-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .phase-timer-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* ─── Controls ─────────────────────────────────────────── */
+        .controls-card::before { background: var(--gradient-green); }
+
+        .weight-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .weight-slider {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weight-name {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            min-width: 55px;
+        }
+
+        .weight-name .greek {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            font-size: 0.8rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border: none;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+        }
+
+        .weight-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            min-width: 42px;
+            text-align: center;
+        }
+
+        /* ─── Simulation Control Buttons ───────────────────────── */
+        .sim-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: var(--gradient-green);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            box-shadow: var(--shadow-glow-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-stop {
+            background: var(--gradient-red);
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            box-shadow: var(--shadow-glow-red);
+            transform: translateY(-1px);
+        }
+
+        /* ─── Connection Overlay ───────────────────────────────── */
+        .connection-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 26, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .connection-modal {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 48px;
+            text-align: center;
+            max-width: 420px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .connection-modal h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin: 16px 0 8px;
+        }
+
+        .connection-modal p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .retry-btn {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: var(--gradient-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .retry-btn:hover {
+            box-shadow: var(--shadow-glow-blue);
+            transform: translateY(-1px);
+        }
+
+        /* ─── Queue Bars in Canvas Section ─────────────────────── */
+        .queue-bars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .queue-bar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+        }
+
+        .queue-bar-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .queue-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .queue-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .queue-bar-fill.ns { background: var(--gradient-green); }
+        .queue-bar-fill.ew { background: var(--gradient-amber); }
+
+        .queue-bar-value {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+        }
+
+        .queue-bar-value span:first-child { color: var(--text-muted); }
+        .queue-bar-value span:last-child { color: var(--text-primary); font-weight: 700; }
+
+        /* ─── Responsive ───────────────────────────────────────── */
+        @media (max-width: 1200px) {
+            .main {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+
+            .metrics-bar {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 780px) {
+            .header { padding: 12px 16px; }
+            .header-title h1 { font-size: 0.95rem; }
+            .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* ─── Idle State Canvas ────────────────────────────────── */
+        .idle-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(13, 17, 23, 0.85);
+            border-radius: var(--radius-sm);
+            z-index: 5;
+        }
+
+        .idle-overlay .idle-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .idle-overlay p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+
+        <!-- ═══ Connection Overlay ═══ -->
+        <div class="connection-overlay" id="connectionOverlay">
+            <div class="connection-modal">
+                <div class="spinner" id="connectionSpinner"></div>
+                <h2 id="connectionTitle">Connecting to Server</h2>
+                <p id="connectionMsg">Establishing WebSocket connection to the SUMO simulation backend…</p>
+                <button class="retry-btn" id="retryBtn" style="display:none;" onclick="connectWebSocket()">Retry Connection</button>
+            </div>
+        </div>
+
+        <!-- ═══ Header ═══ -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">🚦</div>
+                <div class="header-title">
+                    <h1>AI Traffic Command Center</h1>
+                    <p>Nash Equilibrium · Game Theory · Live SUMO Simulation</p>
+                </div>
+            </div>
+            <div class="connection-badge" id="connectionBadge">
+                <div class="connection-dot" id="connectionDot"></div>
+                <span id="connectionText">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- ═══ Main Dashboard ═══ -->
+        <main class="main">
+
+            <!-- ── Metrics Bar ── -->
+            <div class="metrics-bar" id="metricsBar">
+                <div class="metric-card">
+                    <div class="metric-icon">⏱️</div>
+                    <div class="metric-value" id="metricSimTime">0</div>
+                    <div class="metric-unit">seconds</div>
+                    <div class="metric-label">Sim Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🚗</div>
+                    <div class="metric-value" id="metricVehicles">0</div>
+                    <div class="metric-unit">active</div>
+                    <div class="metric-label">Vehicles</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-value" id="metricAvgWait">0.0</div>
+                    <div class="metric-unit">sec</div>
+                    <div class="metric-label">Avg Wait Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🏎️</div>
+                    <div class="metric-value" id="metricAvgSpeed">0.0</div>
+                    <div class="metric-unit">m/s</div>
+                    <div class="metric-label">Avg Speed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">✅</div>
+                    <div class="metric-value" id="metricThroughput">0</div>
+                    <div class="metric-unit">trips</div>
+                    <div class="metric-label">Throughput</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-value" id="metricEquilibrium">—</div>
+                    <div class="metric-unit">axis</div>
+                    <div class="metric-label">Nash Equilibrium</div>
+                </div>
+            </div>
+
+            <!-- ── Left: Canvas ── -->
+            <div class="canvas-section">
+                <div class="canvas-container" id="canvasContainer">
+                    <div class="canvas-header">
+                        <div class="canvas-title">
+                            🛰️ Live Intersection View
+                            <span class="live-badge" id="liveBadge" style="display:none;">● LIVE</span>
+                        </div>
+                        <div class="canvas-legend">
+                            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div> Car</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div> Motorcycle</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6;"></div> Rickshaw</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> Truck/Bus</div>
+                        </div>
+                    </div>
+                    <canvas id="intersectionCanvas"></canvas>
+                    <div class="idle-overlay" id="idleOverlay">
+                        <div class="idle-icon">🛣️</div>
+                        <p>Start the simulation to see live traffic</p>
+                    </div>
+                </div>
+                <div class="queue-bars">
+                    <div class="queue-bar-card">
+                        <div class="queue-bar-label">🟢 North–South Queue</div>
+                        <div class="queue-bar-track"><div class="queue-bar-fill ns" id="queueBarNS" style="width:0%"></div></div>
+                        <div class="queue-bar-value"><span>Queue</span><span id="queueValNS">0 vehicles</span></div>
+                    </div>
+                    <div class="queue-bar-card">
+                        <div class="queue-bar-label">🟡 East–West Queue</div>
+                        <div class="queue-bar-track"><div class="queue-bar-fill ew" id="queueBarEW" style="width:0%"></div></div>
+                        <div class="queue-bar-value"><span>Queue</span><span id="queueValEW">0 vehicles</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Right Panel ── -->
+            <div class="right-panel">
+
+                <!-- Nash Equilibrium Matrix -->
+                <div class="panel-card nash-card">
+                    <div class="panel-title">🧮 Nash Equilibrium Matrix</div>
+                    <div class="nash-matrix">
+                        <div class="nash-corner"></div>
+                        <div class="nash-header">EW Go</div>
+                        <div class="nash-header">EW Yield</div>
+                        <div class="nash-row-label">NS Go</div>
+                        <div class="nash-cell conflict" id="nashCell00">
+                            <div class="nash-cell-value">⚠️</div>
+                            <div class="nash-cell-label">Conflict</div>
+                        </div>
+                        <div class="nash-cell" id="nashCell01">
+                            <div class="nash-cell-value" id="nashVal01">0.0</div>
+                            <div class="nash-cell-label">NS serves</div>
+                        </div>
+                        <div class="nash-row-label">NS Yield</div>
+                        <div class="nash-cell" id="nashCell10">
+                            <div class="nash-cell-value" id="nashVal10">0.0</div>
+                            <div class="nash-cell-label">EW serves</div>
+                        </div>
+                        <div class="nash-cell conflict" id="nashCell11">
+                            <div class="nash-cell-value">💤</div>
+                            <div class="nash-cell-label">Both Yield</div>
+                        </div>
+                    </div>
+
+                    <!-- Pressure Bars -->
+                    <div class="nash-pressure-bar">
+                        <div class="pressure-row">
+                            <span class="pressure-label">NS</span>
+                            <div class="pressure-track"><div class="pressure-fill ns" id="pressureNS" style="width:0%"></div></div>
+                            <span class="pressure-value" id="pressureValNS">0.0</span>
+                        </div>
+                        <div class="pressure-row">
+                            <span class="pressure-label">EW</span>
+                            <div class="pressure-track"><div class="pressure-fill ew" id="pressureEW" style="width:0%"></div></div>
+                            <span class="pressure-value" id="pressureValEW">0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Cost Breakdown -->
+                    <div class="cost-breakdown">
+                        <div>
+                            <div class="cost-col-title">NS Costs</div>
+                            <div class="cost-item"><span class="cost-item-label">α · Wait</span><span class="cost-item-value" id="costNSWait">0.0</span></div>
+                            <div class="cost-item"><span class="cost-item-label">β · Delay</span><span class="cost-item-value" id="costNSDelay">0.0</span></div>
+                            <div class="cost-item"><span class="cost-item-label">γ · Resid</span><span class="cost-item-value" id="costNSResid">0.0</span></div>
+                        </div>
+                        <div>
+                            <div class="cost-col-title">EW Costs</div>
+                            <div class="cost-item"><span class="cost-item-label">α · Wait</span><span class="cost-item-value" id="costEWWait">0.0</span></div>
+                            <div class="cost-item"><span class="cost-item-label">β · Delay</span><span class="cost-item-value" id="costEWDelay">0.0</span></div>
+                            <div class="cost-item"><span class="cost-item-label">γ · Resid</span><span class="cost-item-value" id="costEWResid">0.0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traffic Signal -->
+                <div class="panel-card signal-card">
+                    <div class="panel-title">🚦 Signal State</div>
+                    <div class="signal-display">
+                        <div class="signal-axis" id="signalNS">
+                            <div class="signal-axis-label">North–South</div>
+                            <div class="signal-light red" id="lightNS"></div>
+                            <div class="signal-state-text red" id="stateNS">RED</div>
+                            <div class="signal-queue">Q: <span id="sigQueueNS">0</span></div>
+                        </div>
+                        <div class="signal-axis" id="signalEW">
+                            <div class="signal-axis-label">East–West</div>
+                            <div class="signal-light red" id="lightEW"></div>
+                            <div class="signal-state-text red" id="stateEW">RED</div>
+                            <div class="signal-queue">Q: <span id="sigQueueEW">0</span></div>
+                        </div>
+                    </div>
+                    <div class="phase-timer">
+                        <div class="phase-timer-value" id="phaseTimerValue">0s</div>
+                        <div class="phase-timer-label">Time in Current Phase</div>
+                    </div>
+                </div>
+
+                <!-- Weight Controls -->
+                <div class="panel-card controls-card">
+                    <div class="panel-title">⚙️ Game Theory Weights</div>
+                    <div class="weight-slider-group">
+                        <div class="weight-slider">
+                            <div class="weight-name"><span class="greek">α</span> Wait</div>
+                            <input type="range" id="sliderAlpha" min="0" max="3" step="0.1" value="1.0">
+                            <div class="weight-value" id="valueAlpha">1.0</div>
+                        </div>
+                        <div class="weight-slider">
+                            <div class="weight-name"><span class="greek">β</span> Delay</div>
+                            <input type="range" id="sliderBeta" min="0" max="3" step="0.1" value="0.5">
+                            <div class="weight-value" id="valueBeta">0.5</div>
+                        </div>
+                        <div class="weight-slider">
+                            <div class="weight-name"><span class="greek">γ</span> Resid</div>
+                            <input type="range" id="sliderGamma" min="0" max="3" step="0.1" value="0.8">
+                            <div class="weight-value" id="valueGamma">0.8</div>
+                        </div>
+                    </div>
+                    <div class="sim-controls">
+                        <button class="btn btn-start" id="btnStart" onclick="startSimulation()">
+                            ▶ Start
+                        </button>
+                        <button class="btn btn-stop" id="btnStop" onclick="stopSimulation()" disabled>
+                            ⬛ Stop
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+    /* ═══════════════════════════════════════════════════════════════════
+       AI Traffic Command Center — Client-Side Logic
+       ═══════════════════════════════════════════════════════════════════ */
+
+    // ─── State ──────────────────────────────────────────────────────
+    let ws = null;
+    let isConnected = false;
+    let isSimRunning = false;
+    let latestData = null;
+    let animFrameId = null;
+
+    // ─── DOM References ─────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const canvas = $('intersectionCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ─── Canvas Setup ───────────────────────────────────────────────
+    function resizeCanvas() {
+        const container = $('canvasContainer');
+        const headerH = container.querySelector('.canvas-header').offsetHeight;
+        const w = container.clientWidth - 32;  // padding
+        const h = container.clientHeight - headerH - 44;
+        const size = Math.min(w, Math.max(h, 400));
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // ─── Intersection Rendering ─────────────────────────────────────
+    /*
+     * SUMO applies a netOffset of +500,+500 to this network.
+     * Actual coordinate space: 0 to 1000 on both axes.
+     * Center junction is at (500, 500).
+     * N=(500,1000), S=(500,0), E=(1000,500), W=(0,500).
+     *
+     * Road width: ~50m for 4 lanes (each ~3.2m + gaps)
+     */
+
+    const SIM_MIN = 0;       // SUMO min coordinate (after netOffset)
+    const SIM_MAX = 1000;    // SUMO max coordinate (after netOffset)
+    const SIM_CENTER = 500;  // Center junction position
+    const ROAD_WIDTH_SIM = 50; // Approx road width in sim units
+
+    function simToCanvas(sx, sy) {
+        const pad = 20;
+        const usable = canvas.width - 2 * pad;
+        const scale = usable / (SIM_MAX - SIM_MIN);
+        return [
+            pad + (sx - SIM_MIN) * scale,
+            pad + (SIM_MAX - sy) * scale  // Flip Y: SUMO Y+ is up, canvas Y+ is down
+        ];
+    }
+
+    // Vehicle type → color mapping (matches the Pakistani traffic mix)
+    const VEHICLE_COLORS = {
+        'car':        '#3b82f6',   // Blue
+        'motorcycle': '#f59e0b',   // Amber
+        'rickshaw':   '#8b5cf6',   // Purple
+        'truck':      '#ef4444',   // Red
+        'bus':        '#ec4899',   // Pink
+        'default':    '#64748b'    // Gray
+    };
+
+    const VEHICLE_SIZES = {
+        'car':        5,
+        'motorcycle': 3,
+        'rickshaw':   4,
+        'truck':      7,
+        'bus':        8,
+        'default':    4
+    };
+
+    function drawIntersection(data) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Clear
+        ctx.fillStyle = '#0d1117';
+        ctx.fillRect(0, 0, w, h);
+
+        // Convert key SUMO coordinates to canvas pixels
+        // Center junction is at SUMO (500, 500)
+        const [cx, cy] = simToCanvas(SIM_CENTER, SIM_CENTER);
+
+        // Calculate road width in canvas pixels
+        const pad = 20;
+        const scale = (w - 2 * pad) / (SIM_MAX - SIM_MIN);
+        const roadW = ROAD_WIDTH_SIM * scale;
+        const halfRoadW = roadW / 2;
+
+        // Get canvas positions for road endpoints
+        const [, topY]    = simToCanvas(SIM_CENTER, SIM_MAX);   // N edge (y=1000 → top of canvas)
+        const [, bottomY] = simToCanvas(SIM_CENTER, SIM_MIN);   // S edge (y=0 → bottom of canvas)
+        const [leftX, ]   = simToCanvas(SIM_MIN, SIM_CENTER);   // W edge (x=0 → left)
+        const [rightX, ]  = simToCanvas(SIM_MAX, SIM_CENTER);   // E edge (x=1000 → right)
+
+        // ── Draw terrain (dark asphalt areas) ──
+        ctx.fillStyle = '#151b28';
+        ctx.fillRect(0, 0, w, h);
+
+        // ── Draw roads (NS and EW) ──
+        ctx.fillStyle = '#1e2638';
+        // NS road (vertical) — centered at cx, from top to bottom
+        ctx.fillRect(cx - halfRoadW, topY, roadW, bottomY - topY);
+        // EW road (horizontal) — centered at cy, from left to right
+        ctx.fillRect(leftX, cy - halfRoadW, rightX - leftX, roadW);
+
+        // ── Road markings — center dashed lines ──
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([8, 12]);
+
+        // NS center line (above and below intersection)
+        ctx.beginPath();
+        ctx.moveTo(cx, topY);
+        ctx.lineTo(cx, cy - halfRoadW);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + halfRoadW);
+        ctx.lineTo(cx, bottomY);
+        ctx.stroke();
+
+        // EW center line (left and right of intersection)
+        ctx.beginPath();
+        ctx.moveTo(leftX, cy);
+        ctx.lineTo(cx - halfRoadW, cy);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx + halfRoadW, cy);
+        ctx.lineTo(rightX, cy);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
+        // ── Lane markings ──
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)';
+        ctx.lineWidth = 0.5;
+        for (let i = 1; i < 4; i++) {
+            const offset = -halfRoadW + (roadW / 4) * i;
+            // NS lane dividers
+            ctx.setLineDash([4, 8]);
+            ctx.beginPath();
+            ctx.moveTo(cx + offset, topY);
+            ctx.lineTo(cx + offset, cy - halfRoadW);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx + offset, cy + halfRoadW);
+            ctx.lineTo(cx + offset, bottomY);
+            ctx.stroke();
+            // EW lane dividers
+            ctx.beginPath();
+            ctx.moveTo(leftX, cy + offset);
+            ctx.lineTo(cx - halfRoadW, cy + offset);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx + halfRoadW, cy + offset);
+            ctx.lineTo(rightX, cy + offset);
+            ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // ── Intersection box ──
+        const tl = data ? data.traffic_light : null;
+        const nsColor = tl ? tl.ns_state : 'red';
+        const ewColor = tl ? tl.ew_state : 'red';
+
+        // Intersection fill
+        ctx.fillStyle = '#232d42';
+        ctx.fillRect(cx - halfRoadW, cy - halfRoadW, roadW, roadW);
+
+        // ── Crosswalk markings ──
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.08)';
+        const crossW = 4;
+        const crossGap = 6;
+        // Top crosswalk
+        for (let x = cx - halfRoadW + 4; x < cx + halfRoadW - 4; x += crossW + crossGap) {
+            ctx.fillRect(x, cy - halfRoadW - 8, crossW, 6);
+        }
+        // Bottom crosswalk
+        for (let x = cx - halfRoadW + 4; x < cx + halfRoadW - 4; x += crossW + crossGap) {
+            ctx.fillRect(x, cy + halfRoadW + 2, crossW, 6);
+        }
+        // Left crosswalk
+        for (let y = cy - halfRoadW + 4; y < cy + halfRoadW - 4; y += crossW + crossGap) {
+            ctx.fillRect(cx - halfRoadW - 8, y, 6, crossW);
+        }
+        // Right crosswalk
+        for (let y = cy - halfRoadW + 4; y < cy + halfRoadW - 4; y += crossW + crossGap) {
+            ctx.fillRect(cx + halfRoadW + 2, y, 6, crossW);
+        }
+
+        // ── Traffic Light Indicators at the intersection edges ──
+        const lightRadius = 6;
+        const lightColors = {
+            'green':  '#10b981',
+            'red':    '#ef4444',
+            'yellow': '#f59e0b'
+        };
+
+        function drawLight(x, y, color) {
+            // Glow
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, lightRadius * 3);
+            grad.addColorStop(0, lightColors[color] + '60');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x - lightRadius * 3, y - lightRadius * 3, lightRadius * 6, lightRadius * 6);
+
+            // Light circle
+            ctx.beginPath();
+            ctx.arc(x, y, lightRadius, 0, Math.PI * 2);
+            ctx.fillStyle = lightColors[color] || '#64748b';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // NS lights (top and bottom of intersection)
+        drawLight(cx - halfRoadW - 14, cy - halfRoadW - 14, nsColor);  // N approach
+        drawLight(cx + halfRoadW + 14, cy + halfRoadW + 14, nsColor);  // S approach
+
+        // EW lights (left and right of intersection)
+        drawLight(cx - halfRoadW - 14, cy + halfRoadW + 14, ewColor);  // W approach
+        drawLight(cx + halfRoadW + 14, cy - halfRoadW - 14, ewColor);  // E approach
+
+        // ── Direction labels ──
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('N', cx, Math.max(topY - 8, 8));
+        ctx.fillText('S', cx, Math.min(bottomY + 8, h - 4));
+        ctx.fillText('E', Math.min(rightX + 8, w - 4), cy);
+        ctx.fillText('W', Math.max(leftX - 8, 8), cy);
+
+        // ── Draw Vehicles ──
+        if (data && data.vehicles) {
+            for (const v of data.vehicles) {
+                const [vx, vy] = simToCanvas(v.x, v.y);
+
+                // Skip vehicles outside canvas
+                if (vx < -10 || vx > w + 10 || vy < -10 || vy > h + 10) continue;
+
+                const color = VEHICLE_COLORS[v.type] || VEHICLE_COLORS['default'];
+                const size = VEHICLE_SIZES[v.type] || VEHICLE_SIZES['default'];
+
+                // Draw vehicle dot
+                ctx.beginPath();
+                ctx.arc(vx, vy, size * 0.6, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Subtle glow for moving vehicles
+                if (v.speed > 1) {
+                    const glow = ctx.createRadialGradient(vx, vy, 0, vx, vy, size * 2);
+                    glow.addColorStop(0, color + '30');
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.fillRect(vx - size * 2, vy - size * 2, size * 4, size * 4);
+                }
+
+                // Red tint for waiting vehicles
+                if (v.waiting > 5) {
+                    ctx.beginPath();
+                    ctx.arc(vx, vy, size * 0.8, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ── Intersection label ──
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.3)';
+        ctx.font = '700 9px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CENTER', cx, cy + 3);
+    }
+
+    // ─── Render Loop ────────────────────────────────────────────────
+    function renderLoop() {
+        drawIntersection(latestData);
+        animFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    // Start render loop immediately
+    renderLoop();
+
+    // ─── UI Update Functions ────────────────────────────────────────
+
+    function updateMetrics(data) {
+        if (!data || !data.metrics) return;
+        const m = data.metrics;
+        $('metricSimTime').textContent = m.sim_time || 0;
+        $('metricVehicles').textContent = m.total_vehicles || 0;
+        $('metricAvgWait').textContent = (m.avg_waiting_time || 0).toFixed(1);
+        $('metricAvgSpeed').textContent = (m.avg_speed || 0).toFixed(1);
+        $('metricThroughput').textContent = m.throughput || 0;
+    }
+
+    function updateNashMatrix(data) {
+        if (!data || !data.nash_matrix) return;
+        const n = data.nash_matrix;
+
+        // Matrix values
+        $('nashVal01').textContent = (n.ns_pressure || 0).toFixed(1);
+        $('nashVal10').textContent = (n.ew_pressure || 0).toFixed(1);
+
+        // Equilibrium highlighting
+        const cell01 = $('nashCell01');
+        const cell10 = $('nashCell10');
+
+        cell01.classList.remove('equilibrium');
+        cell10.classList.remove('equilibrium');
+
+        // Remove old badges
+        cell01.querySelector('.nash-eq-badge')?.remove();
+        cell10.querySelector('.nash-eq-badge')?.remove();
+
+        if (n.equilibrium === 'NS') {
+            cell01.classList.add('equilibrium');
+            const badge = document.createElement('div');
+            badge.className = 'nash-eq-badge';
+            badge.textContent = 'NE';
+            cell01.appendChild(badge);
+        } else {
+            cell10.classList.add('equilibrium');
+            const badge = document.createElement('div');
+            badge.className = 'nash-eq-badge';
+            badge.textContent = 'NE';
+            cell10.appendChild(badge);
+        }
+
+        $('metricEquilibrium').textContent = n.equilibrium || '—';
+
+        // Pressure bars
+        const maxPressure = Math.max(n.ns_pressure || 1, n.ew_pressure || 1, 1);
+        $('pressureNS').style.width = ((n.ns_pressure / maxPressure) * 100) + '%';
+        $('pressureEW').style.width = ((n.ew_pressure / maxPressure) * 100) + '%';
+        $('pressureValNS').textContent = (n.ns_pressure || 0).toFixed(1);
+        $('pressureValEW').textContent = (n.ew_pressure || 0).toFixed(1);
+
+        // Cost breakdown
+        if (n.components) {
+            $('costNSWait').textContent = (n.components.ns?.wait || 0).toFixed(1);
+            $('costNSDelay').textContent = (n.components.ns?.delay || 0).toFixed(1);
+            $('costNSResid').textContent = (n.components.ns?.residual || 0).toFixed(1);
+            $('costEWWait').textContent = (n.components.ew?.wait || 0).toFixed(1);
+            $('costEWDelay').textContent = (n.components.ew?.delay || 0).toFixed(1);
+            $('costEWResid').textContent = (n.components.ew?.residual || 0).toFixed(1);
+        }
+    }
+
+    function updateSignals(data) {
+        if (!data || !data.traffic_light) return;
+        const tl = data.traffic_light;
+
+        // NS signal
+        const lightNS = $('lightNS');
+        const stateNS = $('stateNS');
+        const signalNS = $('signalNS');
+        lightNS.className = 'signal-light ' + tl.ns_state;
+        stateNS.className = 'signal-state-text ' + tl.ns_state;
+        stateNS.textContent = tl.ns_state.toUpperCase();
+        signalNS.className = 'signal-axis active-' + tl.ns_state;
+
+        // EW signal
+        const lightEW = $('lightEW');
+        const stateEW = $('stateEW');
+        const signalEW = $('signalEW');
+        lightEW.className = 'signal-light ' + tl.ew_state;
+        stateEW.className = 'signal-state-text ' + tl.ew_state;
+        stateEW.textContent = tl.ew_state.toUpperCase();
+        signalEW.className = 'signal-axis active-' + tl.ew_state;
+
+        // Phase timer
+        $('phaseTimerValue').textContent = (tl.time_in_phase || 0) + 's';
+
+        // Queue values
+        if (data.queues) {
+            $('sigQueueNS').textContent = data.queues.ns || 0;
+            $('sigQueueEW').textContent = data.queues.ew || 0;
+        }
+    }
+
+    function updateQueues(data) {
+        if (!data || !data.queues) return;
+        const q = data.queues;
+        const maxQ = Math.max(q.ns || 1, q.ew || 1, 20);
+
+        $('queueBarNS').style.width = Math.min(100, ((q.ns / maxQ) * 100)) + '%';
+        $('queueBarEW').style.width = Math.min(100, ((q.ew / maxQ) * 100)) + '%';
+        $('queueValNS').textContent = (q.ns || 0) + ' vehicles';
+        $('queueValEW').textContent = (q.ew || 0) + ' vehicles';
+    }
+
+    function updateWeightDisplays(data) {
+        if (!data || !data.weights) return;
+        const w = data.weights;
+        $('sliderAlpha').value = w.alpha;
+        $('valueAlpha').textContent = parseFloat(w.alpha).toFixed(1);
+        $('sliderBeta').value = w.beta;
+        $('valueBeta').textContent = parseFloat(w.beta).toFixed(1);
+        $('sliderGamma').value = w.gamma;
+        $('valueGamma').textContent = parseFloat(w.gamma).toFixed(1);
+    }
+
+    // ─── WebSocket Connection ───────────────────────────────────────
+
+    function connectWebSocket() {
+        $('connectionOverlay').style.display = 'flex';
+        $('connectionSpinner').style.display = 'block';
+        $('retryBtn').style.display = 'none';
+        $('connectionTitle').textContent = 'Connecting to Server';
+        $('connectionMsg').textContent = 'Establishing WebSocket connection to the SUMO simulation backend…';
+
+        const wsUrl = `ws://${window.location.hostname || 'localhost'}:8765`;
+
+        try {
+            ws = new WebSocket(wsUrl);
+        } catch (e) {
+            showConnectionError();
+            return;
+        }
+
+        ws.onopen = () => {
+            isConnected = true;
+            $('connectionOverlay').style.display = 'none';
+            $('connectionDot').classList.add('connected');
+            $('connectionText').textContent = 'Connected';
+            console.log('[WS] Connected to', wsUrl);
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'simulation_update') {
+                    latestData = data;
+                    isSimRunning = true;
+                    $('idleOverlay').style.display = 'none';
+                    $('liveBadge').style.display = 'inline';
+                    $('btnStart').disabled = true;
+                    $('btnStop').disabled = false;
+
+                    updateMetrics(data);
+                    updateNashMatrix(data);
+                    updateSignals(data);
+                    updateQueues(data);
+                }
+                else if (data.type === 'simulation_ended') {
+                    isSimRunning = false;
+                    $('liveBadge').style.display = 'none';
+                    $('btnStart').disabled = false;
+                    $('btnStop').disabled = true;
+                    $('idleOverlay').querySelector('p').textContent = 'Simulation completed. Press Start to run again.';
+                    $('idleOverlay').style.display = 'flex';
+                    console.log('[WS] Simulation ended.');
+                }
+                else if (data.type === 'idle') {
+                    updateWeightDisplays(data);
+                }
+            } catch (e) {
+                console.warn('[WS] Parse error:', e);
+            }
+        };
+
+        ws.onclose = () => {
+            isConnected = false;
+            $('connectionDot').classList.remove('connected');
+            $('connectionText').textContent = 'Disconnected';
+
+            if (isSimRunning) {
+                // Unexpected disconnect during simulation
+                isSimRunning = false;
+                $('liveBadge').style.display = 'none';
+                $('btnStart').disabled = false;
+                $('btnStop').disabled = true;
+                $('idleOverlay').querySelector('p').textContent = 'Connection lost. Reconnecting…';
+                $('idleOverlay').style.display = 'flex';
+            }
+
+            // Auto-reconnect after 3s
+            setTimeout(() => {
+                if (!isConnected) connectWebSocket();
+            }, 3000);
+        };
+
+        ws.onerror = () => {
+            showConnectionError();
+        };
+    }
+
+    function showConnectionError() {
+        $('connectionSpinner').style.display = 'none';
+        $('retryBtn').style.display = 'inline-block';
+        $('connectionTitle').textContent = 'Connection Failed';
+        $('connectionMsg').textContent = 'Could not connect to the WebSocket server. Make sure server.py is running on port 8765.';
+    }
+
+    // ─── Simulation Control ─────────────────────────────────────────
+
+    function startSimulation() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'start_simulation' }));
+            $('btnStart').disabled = true;
+            console.log('[WS] Start simulation requested.');
+        }
+    }
+
+    function stopSimulation() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'stop_simulation' }));
+            $('btnStop').disabled = true;
+            console.log('[WS] Stop simulation requested.');
+        }
+    }
+
+    // ─── Weight Slider Events ───────────────────────────────────────
+
+    let weightDebounce = null;
+
+    function sendWeights() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+                type: 'update_weights',
+                alpha: parseFloat($('sliderAlpha').value),
+                beta:  parseFloat($('sliderBeta').value),
+                gamma: parseFloat($('sliderGamma').value)
+            }));
+        }
+    }
+
+    function onWeightChange() {
+        $('valueAlpha').textContent = parseFloat($('sliderAlpha').value).toFixed(1);
+        $('valueBeta').textContent =  parseFloat($('sliderBeta').value).toFixed(1);
+        $('valueGamma').textContent = parseFloat($('sliderGamma').value).toFixed(1);
+
+        clearTimeout(weightDebounce);
+        weightDebounce = setTimeout(sendWeights, 150);
+    }
+
+    $('sliderAlpha').addEventListener('input', onWeightChange);
+    $('sliderBeta').addEventListener('input', onWeightChange);
+    $('sliderGamma').addEventListener('input', onWeightChange);
+
+    // ─── Initialize ─────────────────────────────────────────────────
+    connectWebSocket();
+
+    </script>
+</body>
+</html>

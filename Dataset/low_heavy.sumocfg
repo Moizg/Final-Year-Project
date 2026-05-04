@@ -1,0 +1,17 @@
+<configuration>
+    <input>
+        <net-file value="intersection.net.xml"/>
+        <additional-files value="detectors.add.xml"/>
+        <route-files value="low_heavy.rou.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+    </time>
+
+    <report>
+        <!-- Suppress visual warnings so your Python script runs faster -->
+        <no-warnings value="true"/>
+    </report>
+</configuration>

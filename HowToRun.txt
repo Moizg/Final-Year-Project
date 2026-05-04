@@ -1,0 +1,11 @@
+# Terminal 1: Start the WebSocket simulation server
+cd "d:\Final-Year-Project\Final-Year-Project\4-Intersection Real Payoff"
+python -u server.py
+
+# Terminal 2: Serve the frontend
+python -m http.server 8080 --directory "d:\Final-Year-Project\Final-Year-Project\public"
+# OR:
+python serve_frontend.py
+
+# Open browser → http://localhost:8080
+# Click "▶ START" to begin the simulation

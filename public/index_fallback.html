@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Control Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h1 { color: #2563eb; margin-bottom: 16px; }
+        p { color: #64748b; margin-bottom: 16px; line-height: 1.6; }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 20px 0;
+            border: 4px solid #e2e8f0;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .info { background: #f0f9ff; padding: 16px; border-radius: 8px; margin: 20px 0; }
+        .success { color: #16a34a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚦 Traffic Control Manager</h1>
+        <p>Game Theory Parameter Control Interface</p>
+        <div class="spinner"></div>
+        <p>Loading interface...</p>
+        <div class="info">
+            <p><strong>API Status:</strong> <span class="success">✓ Active</span></p>
+            <p>Access API Documentation:</p>
+            <p><a href="/docs" style="color: #2563eb; text-decoration: none;">📚 Swagger UI</a></p>
+        </div>
+        <script>
+            setTimeout(() => {
+                fetch('/api/health')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'healthy') {
+                            location.reload();
+                        }
+                    })
+                    .catch(err => console.log('Waiting for API...'));
+            }, 2000);
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-05-04 16:18:59 by Eclipse SUMO sumo Version 1.24.0
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="D:\FYP\4-Intersection Real Payoff\intersection.net.xml"/>
+        <route-files value="D:\FYP\4-Intersection Real Payoff\traffic.rou.xml"/>
+        <additional-files value="D:\FYP\4-Intersection Real Payoff\detectors.add.xml,D:\FYP\4-Intersection Real Payoff\baseline.add.xml"/>
+    </input>
+
+    <output>
+        <queue-output value="D:\FYP\4-Intersection Real Payoff\output_queues.xml"/>
+        <queue-output.period value="60"/>
+        <tripinfo-output value="D:\FYP\4-Intersection Real Payoff\output_tripinfo.xml"/>
+        <edgedata-output value="D:\FYP\4-Intersection Real Payoff\output_edgedata.xml"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="36000"/>
+    </time>
+
+    <report>
+        <no-warnings value="true"/>
+    </report>
+
+    <traci_server>
+        <remote-port value="58439"/>
+    </traci_server>
+
+</sumoConfiguration>
+-->
+
+<queue-export xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/queue_file.xsd">
+    <data timestep="0.00">
+        <lanes/>
+    </data>
+    <data timestep="60.00">
+        <lanes>
+            <lane id=":Center_3_0" queueing_time="2.00" queueing_length="5.51" queueing_length_experimental="5.51"/>
+            <lane id="E2C_0" queueing_time="1.00" queueing_length="5.51" queueing_length_experimental="5.51"/>
+            <lane id="E2C_1" queueing_time="10.00" queueing_length="5.50" queueing_length_experimental="8.71"/>
+            <lane id="E2C_2" queueing_time="0.00" queueing_length="0.00" queueing_length_experimental="19.19"/>
+            <lane id="W2C_1" queueing_time="6.00" queueing_length="9.00" queueing_length_experimental="9.00"/>
+            <lane id="W2C_3" queueing_time="10.00" queueing_length="13.00" queueing_length_experimental="20.39"/>
+        </lanes>
+    </data>
+</queue-export>

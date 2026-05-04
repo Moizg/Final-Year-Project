@@ -20,10 +20,7 @@ else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
 def get_lane_metrics(detectors):
-    """
-    Returns a dictionary with both Queue Length (Q) and Total Waiting Time (W).
-    Fix: We get 'Q' from the Camera, but we get 'W' from the Lane itself.
-    """
+   
     total_q = 0
     total_w = 0
     
@@ -97,7 +94,12 @@ def run_simulation():
 
     while traci.simulation.getMinExpectedNumber() > 0:
         traci.simulationStep()
-        
+        # Put this right after you calculate q_ns, w_ns, q_ew, w_ew
+        if step == 300: # 5 minutes into the simulation
+            print("\n--- SNAPSHOT FOR NASH MATRIX (T=300) ---")
+            print(f"NS Axis -> Queue (D): {q_ns}, Total Wait (W): {w_ns}")
+            print(f"EW Axis -> Queue (D): {q_ew}, Total Wait (W): {w_ew}")
+            print("----------------------------------------\n")
         # Only make decisions if we are in a Green Phase (0 or 2)
         # and Minimum Green Time has passed
         curr_phase = traci.trafficlight.getPhase("Center")
@@ -108,7 +110,9 @@ def run_simulation():
             # 1. Gather Data
             q_ns, w_ns = get_lane_metrics(dets_ns)
             q_ew, w_ew = get_lane_metrics(dets_ew)
-
+            
+            
+            
             # 2. Calculate Payoffs (Pressures)
             score_ns = calculate_payoff(q_ns, w_ns)
             score_ew = calculate_payoff(q_ew, w_ew)
